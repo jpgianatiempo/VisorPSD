@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1603281080699.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1303141936",
+    "id" : "8B8BF455",
+    "lastKnownWriteTime" : 1605119268,
+    "last_content_update" : 1605119268936,
+    "path" : "C:/Users/jpgianatiempo/Desktop/Visor PSD/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "222,34",
+        "scrollLine" : "205"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

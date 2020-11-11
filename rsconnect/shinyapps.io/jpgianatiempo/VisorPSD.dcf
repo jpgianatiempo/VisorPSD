@@ -1,0 +1,13 @@
+name: VisorPSD
+title: VisorPSD
+username:
+account: jpgianatiempo
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3061073
+bundleId: 3848495
+url: https://jpgianatiempo.shinyapps.io/VisorPSD/
+when: 1605119887.04656
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: UpdateData.R

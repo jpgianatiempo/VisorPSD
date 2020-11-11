@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1605032237269.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3040611987",
+    "id" : "F09F0C0A",
+    "lastKnownWriteTime" : 1603281371,
+    "last_content_update" : 1603281371,
+    "path" : "C:/Users/jpgianatiempo/Desktop/Visor PSD/UpdateData.R",
+    "project_path" : "UpdateData.R",
+    "properties" : {
+        "cursorPosition" : "11,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
