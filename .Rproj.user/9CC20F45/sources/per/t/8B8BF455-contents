@@ -119,7 +119,32 @@ atributos <- c("All",sort(unique(as.character(psd$Attribute_Description))))
 
 commodity <- c("All", sort(unique(as.character(psd$Commodity_Description))))
 
+#genero psd como % world (saco los worlds y s/c, yield, exc rate)
+psdRelativo <- psd %>% filter(Country_Name %notin% c("World","World (sin China)") &
+                                Attribute_Description %notin% c("Stock/Consumo","Extr. Rate, 999.9999","Yield")) %>%
+  group_by(Commodity_Description, Attribute_Description, Market_Year) %>% 
+  summarise("Value" = Value / sum(Value) * 100,
+            "Country_Name" = Country_Name)
 
+psdRelativo <- psdRelativo %>% mutate("Unit_Description" = "Porcentaje (%)") %>% 
+  select(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Value,Unit_Description)
+
+#agrego mundo
+world <- psdRelativo %>%
+  group_by(Commodity_Description, Attribute_Description, Market_Year, Unit_Description) %>%
+  mutate(Country_Name = "World",
+         Value = 100) %>% 
+  select(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Value,Unit_Description)
+
+world <- world %>% group_by(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Unit_Description) %>% 
+  summarise(Value = mean(Value))
+
+#junto y limpio memoria
+psdRelativo <- rbind(psdRelativo,world)
+rm(world)
+
+#redondeo de valores porcentuales
+psdRelativo$Value = round(psdRelativo$Value, digits = 2)
 
 
 ui <- fluidPage(theme = shinytheme("cerulean"),
@@ -158,7 +183,16 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
 tabsetPanel(type = "tabs",
             tabPanel("Tabla", DT::dataTableOutput("table")),
             tabPanel("Gráficos", shinycssloaders::withSpinner(plotlyOutput("Plot"), type = 5) ),
-            tabPanel("Descarga",downloadButton("download", "Descarga"))
+            tabPanel("Configuración",
+                     br(),
+                     br(),
+                    radioButtons(inputId = "seleccion_tipo_dato",label = "Vista de Datos",
+                                      choiceValues = c("valores_absolutos","valores_relativos"),
+                                      choiceNames = c("Valores absolutos", "Valores relativos al total mundial"),
+                                      selected ="valores_absolutos",inline = T),
+                         br(),
+                    br()),
+            tabPanel("Descarga",br(),br(),br(),downloadButton("download", "Descarga")),br(),br(),br()
             ),
 
 h5("(*) Unidades de referencia:"),
@@ -174,6 +208,7 @@ h6("- Otras Variables: Mtn")
 server <- function(input, output) {
   
   datos_salida <- reactive({
+    if (input$seleccion_tipo_dato == "valores_absolutos") {
     if (input$com != "All") {
       psd <- psd[psd$Commodity_Description == input$com,]
     }
@@ -186,6 +221,21 @@ server <- function(input, output) {
     if (input$mkty != "All") {
       psd <- subset(psd, Market_Year >= input$mkty[1] & Market_Year <= input$mkty[2])
     }
+    } 
+    else {
+        if (input$com != "All") {
+          psdRelativo <- psdRelativo[psdRelativo$Commodity_Description == input$com,]
+        }
+        if (input$atr != "All") {
+          psdRelativo <- psdRelativo[psdRelativo$Attribute_Description %in% c(input$atr),]
+        }
+        if (input$pais != "All") {
+          psdRelativo <- psdRelativo[psdRelativo$Country_Name %in% c(input$pais),]
+        }
+        if (input$mkty != "All") {
+          psdRelativo <- subset(psdRelativo, Market_Year >= input$mkty[1] & Market_Year <= input$mkty[2])
+        }
+      }
   })
   
   # Filter data based on selections
@@ -203,6 +253,7 @@ output$Plot <- renderPlotly({
   p <- ggplotly(p)
   p
 })
+
   
   output$download <- downloadHandler(
     
@@ -221,3 +272,6 @@ output$Plot <- renderPlotly({
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+
+
+
