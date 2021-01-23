@@ -130,18 +130,20 @@ psdRelativo <- psdRelativo %>% mutate("Unit_Description" = "Porcentaje (%)") %>%
   select(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Value,Unit_Description)
 
 #agrego mundo
-world <- psdRelativo %>%
-  group_by(Commodity_Description, Attribute_Description, Market_Year, Unit_Description) %>%
-  mutate(Country_Name = "World",
-         Value = 100) %>% 
-  select(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Value,Unit_Description)
 
-world <- world %>% group_by(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Unit_Description) %>% 
-  summarise(Value = mean(Value))
+# world <- psdRelativo %>%
+#   group_by(Commodity_Description, Attribute_Description, Market_Year, Unit_Description) %>%
+#   mutate(Country_Name = "World",
+#         Value = 100) %>% 
+#   select(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Value,Unit_Description)
+#
+# world <- world %>% group_by(Commodity_Description,Country_Name,Attribute_Description,Market_Year,Unit_Description) %>% 
+#   summarise(Value = mean(Value))
 
 #junto y limpio memoria
-psdRelativo <- rbind(psdRelativo,world)
-rm(world)
+# psdRelativo <- rbind(psdRelativo,world)
+# rm(world)
+
 
 #redondeo de valores porcentuales
 psdRelativo$Value = round(psdRelativo$Value, digits = 2)
@@ -193,14 +195,7 @@ tabsetPanel(type = "tabs",
                          br(),
                     br()),
             tabPanel("Descarga",br(),br(),br(),downloadButton("download", "Descarga")),br(),br(),br()
-            ),
-
-h5("(*) Unidades de referencia:"),
-h6("- Yield: tn/ha"),
-h6("- Area Harvested: Mha"),
-h6("- Extr. Rate, 999.9999: Porcentaje (%)"),
-h6("- Stock/Consumo: Porcentaje (%)"),
-h6("- Otras Variables: Mtn")
+            )
 
 
 )
@@ -246,12 +241,23 @@ server <- function(input, output) {
   
   
 output$Plot <- renderPlotly({
-  p <- ggplot(datos_salida(), aes(x=Market_Year,y=Value,color=Country_Name))+
-    geom_line()+
-    facet_wrap(~Attribute_Description, scales = "free_y") +
-    theme_bw()
-  p <- ggplotly(p)
-  p
+  if (input$seleccion_tipo_dato == "valores_absolutos") {
+    p <- ggplot(datos_salida(), aes(x=Market_Year,y=Value,color=Country_Name,
+                                  text =      paste("Unidades:", Unit_Description)))+
+      geom_line()+
+      facet_wrap(~Attribute_Description, scales = "free_y") +
+      theme_bw()
+    p <- ggplotly(p)
+    p}
+  else {
+    p <- ggplot(datos_salida(), aes(x=Market_Year,y=Value, fill=Country_Name,
+                                    text =      paste("Unidades:", Unit_Description)))+
+      geom_area()+
+      facet_wrap(~Attribute_Description, scales = "free_y") +
+      theme_bw()
+    p <- ggplotly(p)
+    p
+  }
 })
 
   
@@ -262,11 +268,9 @@ output$Plot <- renderPlotly({
     },
     content = function(file) {
       df <- datos_salida()
-      write.csv(x = df, file = file,fileEncoding = "UTF-8")
-    }
-    
-    
-  )
+      write.csv2(x = df, file = file,fileEncoding = "UTF-8")
+    })
+  
 }
 
 
